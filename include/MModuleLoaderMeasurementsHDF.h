@@ -297,7 +297,7 @@ class MModuleLoaderMeasurementsHDF : public MModuleLoaderMeasurements
   MString m_FileNameStripMap;
 
   //! The map which ASICs are HV/LV for HDFv2
-  vector<map<bool, vector<bool>>> m_ASICPolarities;
+  vector<map<unsigned int, vector<bool>>> m_ASICPolarities;
 
   //! The strip map
   MStripMap m_StripMap;

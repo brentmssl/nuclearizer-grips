@@ -241,20 +241,29 @@ bool MModuleLoaderMeasurementsHDF::OpenHDF5File(MString FileName)
     // Read ASIC polarities from the JSON config string (if existent)
     m_ASICPolarities.clear();
     if (!ConfigJSON.empty()) {
-      bool ASICIsPrimary;
+      unsigned int ASICBoard;
+      unsigned int nASICBoard = 4; //TODO: choose based on option?
 
       // Regex to match either "primary"/"secondary", or the polarity stored in "SP"
-      regex pattern(R"(\"(primary|secondary)\"|\"SP\"\s*:\s*(\d+))");
+      regex pattern(R"(\"(primary|secondary|tertiary|quaternary)\"|\"SP\"\s*:\s*(\d+))");
       for (sregex_iterator i = sregex_iterator(ConfigJSON.begin(), ConfigJSON.end(), pattern); i != sregex_iterator(); ++i) {
         
         smatch match = *i;
-
+        
         // Check Group 1: Marker (primary/secondary)
         if (match[1].matched) {
 
-          ASICIsPrimary = match[1].str() == "primary";
+          if (match[1].str() == "primary") {
+            ASICBoard = 0;
+          } else if (match[1].str() == "secondary") {
+            ASICBoard = 1;
+          } else if ((match[1].str() == "tertiary") && (nASICBoard > 2)) {
+            ASICBoard = 2;
+          } else if ((match[1].str() == "quaternary") && (nASICBoard > 2)) {
+            ASICBoard = 3;
+          } //no other values that match
 
-          if (m_ASICPolarities.empty() || m_ASICPolarities.back().find(ASICIsPrimary) != m_ASICPolarities.back().end()) {
+          if (m_ASICPolarities.empty() || m_ASICPolarities.back().find(ASICBoard) != m_ASICPolarities.back().end()) {
 
             // Check that the previous entry has both primary or secondary before creating a new one
             if (!m_ASICPolarities.empty() && (
@@ -265,11 +274,12 @@ bool MModuleLoaderMeasurementsHDF::OpenHDF5File(MString FileName)
                 return false;
             }
 
-            m_ASICPolarities.push_back(map<bool, vector<bool>>());
+            m_ASICPolarities.push_back(map<unsigned int, vector<bool>>());
           }
 
           // Initialize the vector for this ASIC key if it doesn't exist
-          m_ASICPolarities.back()[ASICIsPrimary] = vector<bool>();
+          m_ASICPolarities.back()[ASICBoard] = vector<bool>();
+          cout << "Det " << m_ASICPolarities.size()-1 << ", board " << ASICBoard << endl;
         }
         
         // Check Group 2: SP value
@@ -286,7 +296,7 @@ bool MModuleLoaderMeasurementsHDF::OpenHDF5File(MString FileName)
           }
 
           // val == 1 <=> LV; val == 0 <=> HV
-          m_ASICPolarities.back()[ASICIsPrimary].push_back(val == "1");
+          m_ASICPolarities.back()[ASICBoard].push_back(val == "1");
         }
       }
 
@@ -294,8 +304,8 @@ bool MModuleLoaderMeasurementsHDF::OpenHDF5File(MString FileName)
       if (g_Verbosity >= c_Info) {
         for (size_t i = 0; i < m_ASICPolarities.size(); ++i) {
           cout << "Detector ID " << i << ":" << endl;
-          for (bool key : {true, false} ) {
-            cout << "  " << (key ? "Primary" : "Secondary") << ": ";
+          for (unsigned int key = 0; key < nASICBoard; ++key) {
+            cout << "  " << key << ": ";
             for (bool s : m_ASICPolarities[i][key]) cout << (s ? "LV" : "HV") << " ";
             cout << endl;
           }

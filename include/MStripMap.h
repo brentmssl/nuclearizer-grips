@@ -46,7 +46,7 @@ class MStripMap
   bool Open(MString FileName);
 
   //! Update which ASICs are LV/HV depending on their polarities
-  bool UpdateASICPolarities(vector<map<bool, vector<bool>>> ASICPolarities);
+  bool UpdateASICPolarities(vector<map<unsigned int, vector<bool>>> ASICPolarities);
 
   //! Check if we have a certain read-out ID
   bool HasReadOutID(unsigned int ROI) const;
@@ -83,7 +83,7 @@ class MStripMap
     unsigned int m_ReadOutID;
     unsigned int m_RTB;
     unsigned int m_DRM;
-    bool m_IsPrimary;
+    unsigned int m_ASICBoard;
     unsigned int m_ASICID;
     unsigned int m_ChannelID;
     unsigned int m_DetectorID;

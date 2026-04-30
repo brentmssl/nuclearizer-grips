@@ -85,7 +85,7 @@ bool MStripMap::Open(MString FileName)
       SM.m_ReadOutID = Parser.GetTokenizerAt(i)->GetTokenAtAsUnsignedInt(0);
       SM.m_RTB = Parser.GetTokenizerAt(i)->GetTokenAtAsUnsignedInt(1);
       SM.m_DRM = Parser.GetTokenizerAt(i)->GetTokenAtAsUnsignedInt(2);
-      SM.m_IsPrimary = Parser.GetTokenizerAt(i)->GetTokenAtAsBoolean(3);
+      SM.m_ASICBoard = Parser.GetTokenizerAt(i)->GetTokenAtAsUnsignedInt(3);
       SM.m_ASICID = Parser.GetTokenizerAt(i)->GetTokenAtAsUnsignedInt(4);
       SM.m_ChannelID = Parser.GetTokenizerAt(i)->GetTokenAtAsUnsignedInt(5);
       SM.m_DetectorID = Parser.GetTokenizerAt(i)->GetTokenAtAsUnsignedInt(6);
@@ -104,7 +104,7 @@ bool MStripMap::Open(MString FileName)
       // Infer the rest of the information from the ReadOutID
       SM.m_RTB = (SM.m_ReadOutID >> 8) & 0x01;
       SM.m_DRM = (SM.m_ReadOutID >> 7) & 0x01;
-      SM.m_IsPrimary = (SM.m_ReadOutID >> 6) & 0x01;
+      SM.m_ASICBoard = (SM.m_ReadOutID >> 6) & 0x03;
       SM.m_ASICID = (SM.m_ReadOutID >> 5) & 0x01;
       SM.m_ChannelID = SM.m_ReadOutID & 0x1F;
 
@@ -121,10 +121,18 @@ bool MStripMap::Open(MString FileName)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-bool MStripMap::UpdateASICPolarities(vector<map<bool, vector<bool>>> ASICPolarities) {
+bool MStripMap::UpdateASICPolarities(vector<map<unsigned int, vector<bool>>> ASICPolarities) {
   if (!m_StripMappings.empty()) {
     for (MSingleStripMapping& S : m_StripMappings) {
-      S.m_IsLowVoltage = ASICPolarities[S.m_DetectorID][S.m_IsPrimary][S.m_ASICID];
+      if (S.m_DetectorID > ASICPolarities.size()-1) {
+        cout << "ASICPolarities len" << ASICPolarities.size() << ", but trying to index for Detector " << S.m_DetectorID << ". Assuming no more detectors" << endl;
+        return true;
+      }
+      if (S.m_ASICBoard > ASICPolarities[S.m_DetectorID].size()-1) {
+        cout << "ASICPolarities[" << S.m_DetectorID << "] len" << ASICPolarities[S.m_DetectorID].size() << ", but trying to index for Board " << S.m_ASICBoard << endl;
+        return false;
+      }
+      S.m_IsLowVoltage = ASICPolarities[S.m_DetectorID][S.m_ASICBoard][S.m_ASICID];
     }
   }
   return true;
