@@ -62,7 +62,6 @@ CCFITSLIBS += $(shell pkg-config --libs CCfits)
 else
 $(error "Unable to find CCfits headers and libraries")
 endif
-$(info "CCfits $(CCFITSCXXFLAGS) $(CCFITSLIBS))"
 
 
 #----------------------------------------------------------------
