@@ -62,6 +62,7 @@ CCFITSLIBS += $(shell pkg-config --libs CCfits)
 else
 $(error "Unable to find CCfits headers and libraries")
 endif
+$(info "CCfits $(CCFITSCXXFLAGS) $(CCFITSLIBS))"
 
 
 #----------------------------------------------------------------
@@ -73,7 +74,7 @@ CXXFLAGS += -I$(IN) -I$(MEGALIB)/include -I/opt/local/include $(H5CXXFLAGS) $(CC
 # Comment this line out if you want to accept warnings
 #CXXFLAGS += -Werror -Wno-unused-variable
 
-LIBS += $(H5LIBS) $(CCFITSLIBS)
+LIBS += $(H5LIBS) $(CCFITSLIBS) $(NUCLEARIZERLIBS)
 
 # Definitions
 NUCLEARIZER_DIR        := $(NUCLEARIZER)

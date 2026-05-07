@@ -243,7 +243,7 @@ void MSubModuleChargeTransport::RunChargeTransportForHit(MDEEStripHit& SH, bool 
   MVector Pos = SH.m_SimulatedPositionInDetector;
   double P    = isLV ? Pos.X() : Pos.Y();
   double Q    = isLV ? Pos.Y() : Pos.X();
-  double ΔZ   = isLV ? Pos.Z() + Thickness / 2.0 : Thickness / 2.0 - Pos.Z();
+  double deltaZ   = isLV ? Pos.Z() + Thickness / 2.0 : Thickness / 2.0 - Pos.Z();
 
   // Calculate strip ID by rounding down intentionally to avoid truncation towards zero
   // TODO: Include mask metrology information when calculating the strip ID from the position.
@@ -275,8 +275,8 @@ void MSubModuleChargeTransport::RunChargeTransportForHit(MDEEStripHit& SH, bool 
 
     // Charge transport based on Eq. (7) in https://doi.org/10.1016/j.nima.2023.168310
     // calculate σ and η, assuming t = z / v = z / (µ * E)
-    double Sigma = std::sqrt(2.0 * kB * Temperature * ΔZ / (ElementaryCharge * MeanElectricField)); // in cm
-    double Eta   = std::cbrt(std::pow(InitialChargeCloudSize, 3) + 3.0 * N * ElementaryCharge * ΔZ / (4.0 * TMath::Pi() * Epsilon0 * EpsilonR * MeanElectricField)); // in cm
+    double Sigma = std::sqrt(2.0 * kB * Temperature * deltaZ / (ElementaryCharge * MeanElectricField)); // in cm
+    double Eta   = std::cbrt(std::pow(InitialChargeCloudSize, 3) + 3.0 * N * ElementaryCharge * deltaZ / (4.0 * TMath::Pi() * Epsilon0 * EpsilonR * MeanElectricField)); // in cm
     auto Lambda = [&](double x) -> double { 
       double a = (x - Eta) / (TMath::Sqrt2() * Sigma);
       double b = (x + Eta) / (TMath::Sqrt2() * Sigma);
